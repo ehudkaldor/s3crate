@@ -279,9 +279,29 @@ class Cryptographer(file: File, password: Array[Char]) {
     val b = new Array[Byte](1)
     def read(): Int = { read(b, 0, 1); b(0)  }
     override def read(b: Array[Byte], off: Int, len: Int): Int = {
-      val bytesRead = data.read(b, off, len)
-      sdlkjfjfsdfcds
-      bytesRead
+      val cipher = makeCipher()
+
+      cipher.init(false, new KeyParameter(key.byteArray))
+
+      var outL: Int = 0
+      var inblock: Array[Byte] = null
+      var outblock: Array[Byte] = null
+      var rv: Int = 0
+      while (({rv = data.read(inblock); rv}) > 0) {
+        inblock = Hex.decode(inblock)
+        outblock = new Array[Byte](cipher.getOutputSize(inblock.length))
+        outL = cipher.processBytes(inblock, 0, inblock.length, outblock, 0)
+        if (outL > 0) {
+          outblock.copyToArray(b)
+        }
+      }
+
+      outL = cipher.doFinal(outblock, 0)
+      if (outL > 0) {
+        outblock.copyToArray(b)
+      }
+      
+      b.length
     }
   }
 
