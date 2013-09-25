@@ -17,6 +17,7 @@ trait CryptographicTestBase extends After {
   val data = new Array[Byte](dataLength)
   new Random(27831).nextBytes(data)
   val keyType = RSA(1024)
+  val symmKeyType = AES(1024)
 
   //make sure we delete everything when the tests are done
   def after = {

@@ -6,6 +6,10 @@ import org.apache.commons.io.FileUtils
 import java.util.{Random, UUID}
 import org.slf4j.LoggerFactory
 import org.specs2.mutable.After
+import java.io.PrintWriter
+import java.io.InputStream
+import java.io.BufferedInputStream
+import java.io.FileInputStream
 
 /**
  * @author Josh Albrecht (joshalbrecht@gmail.com)
@@ -43,11 +47,21 @@ class CryptographerSpec extends SafeLogSpecification {
   }
 
   "symmetric keys" should {
-    "be easy to generate for various strengtha" in new Context {
+    "be easy to generate for various strengths" in new Context {
 
     }
     "properly encrypt and decrypt streams of data" in new Context {
-
+      val clearFile = new File(FileUtils.getTempDirectory, "clearTxtFile.txt")
+      val cipherFile = new File(FileUtils.getTempDirectory, "cipherTxtFile.txt")
+      clearFile.createNewFile()
+      cipherFile.createNewFile()
+      val clearTxt = "Hi, this is the clear text.\nOh! threr's a typo!"
+      new PrintWriter(clearFile).write(clearTxt)
+      val key = crypto.generateSymmetricKey(symmKeyType)
+      crypto.encrypt(clearFile.toURI().toString(), cipherFile.toURI().toString(), key)
+      
+      val cipherStream = crypto.encryptStream(key, new FileInputStream(clearFile))
+      val clearStream = crypto.decryptStream(key, new FileInputStream(cipherFile))
     }
   }
 
