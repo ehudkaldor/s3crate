@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory
 import com.jcabi.aspects.Loggable
 import java.util.concurrent.TimeUnit
 import org.bouncycastle.crypto.CipherParameters
+import org.bouncycastle.crypto.engines.AESEngine
 
 /**
  * Contains all encryption logic. Stores your keys in a password-protected file on the local computer.
@@ -218,14 +219,10 @@ class Cryptographer(file: File, password: Array[Char]) {
   }
 
   protected def makeCipher(): PaddedBufferedBlockCipher = {
-    new PaddedBufferedBlockCipher(new CBCBlockCipher(new DESedeEngine))
+//    new PaddedBufferedBlockCipher(new CBCBlockCipher(new DESedeEngine))
+    new PaddedBufferedBlockCipher(new CBCBlockCipher(new AESEngine))
   }
 
-  //TODO:  implement! Note that you'll almost certainly have to read from one, write to a buffer, and then read from
-  //the buffer. See Compressor for an example that does the same thing, but with compression (not encryption). And see
-  //the second test in CryptographerIntegrationSpec for an example that uses the deprecated methods in this class
-  //to do symmetric key encryption--basically you just have to adapt that to make the input and output into streams,
-  //and then convert it to use AES instead of DES
   /**
    * Return an input stream that represents an encrypted version of the original input stream.
    *
@@ -243,12 +240,16 @@ class Cryptographer(file: File, password: Array[Char]) {
       
       val tempClearArr = new Array[Byte](len)
       val bytesRead = data.read(tempClearArr, off, len)
+      
+      //if nothing was read - we can return right here
       if (bytesRead < 0) return bytesRead
 
       val outBlockSize: Int = cipher.getOutputSize(bytesRead)
 
       val outBuf = new Array[Byte](outBlockSize)
-      val length1 = cipher.processBytes(tempClearArr, 0, bytesRead, outBuf, 0);
+      //encrypt what was read
+      val length1 = cipher.processBytes(tempClearArr, 0, bytesRead, outBuf, 0)
+      //pad the remainder
       val length2 = cipher.doFinal(outBuf, length1)
       val actualLength = length1 + length2
       val result = new Array[Byte](actualLength)
@@ -257,11 +258,6 @@ class Cryptographer(file: File, password: Array[Char]) {
     }
   }
 
-  //TODO:  implement! Note that you'll almost certainly have to read from one, write to a buffer, and then read from
-  //the buffer. See Compressor for an example that does the same thing, but with compression (not encryption). And see
-  //the second test in CryptographerIntegrationSpec for an example that uses the deprecated methods in this class
-  //to do symmetric key encryption--basically you just have to adapt that to make the input and output into streams,
-  //and then convert it to use AES instead of DES
   /**
    * Return an input stream that represents a decrypted version of the original input stream.
    *
@@ -279,6 +275,8 @@ class Cryptographer(file: File, password: Array[Char]) {
       
       val tempEncryptedArr = new Array[Byte](len)
       val bytesRead = data.read(tempEncryptedArr, off, len)
+
+      //if nothing was read - we can return right here
       if (bytesRead < 0) return bytesRead
 
       val outblockSize = cipher.getOutputSize(bytesRead)
