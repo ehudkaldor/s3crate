@@ -30,6 +30,7 @@ import org.bouncycastle.crypto.modes.CBCBlockCipher
 import org.slf4j.LoggerFactory
 import com.jcabi.aspects.Loggable
 import java.util.concurrent.TimeUnit
+import org.bouncycastle.crypto.CipherParameters
 
 /**
  * Contains all encryption logic. Stores your keys in a password-protected file on the local computer.
@@ -239,26 +240,39 @@ class Cryptographer(file: File, password: Array[Char]) {
     override def read(b: Array[Byte], off: Int, len: Int): Int = {
       val cipher = makeCipher()
       cipher.init(true, new KeyParameter(key.byteArray))
-      val inBlockSize: Int = 47
-      val outBlockSize: Int = cipher.getOutputSize(inBlockSize)
-      val inblock: Array[Byte] = new Array[Byte](inBlockSize)
-      val outblock: Array[Byte] = new Array[Byte](outBlockSize)
       
-      var inL = 0
-      var outL = 0
-      while (({inL = data.read(inblock, 0, inBlockSize); inL}) > 0) {
-        outL = cipher.processBytes(inblock, 0, inL, outblock, 0)
-        if (outL > 0) {
-          Hex.encode(outblock, 0, outL).copyToArray(b)
-        }
-      }
-      
-      outL = cipher.doFinal(outblock, 0)
-      if (outL > 0) {
-        Hex.encode(outblock, 0, outL).copyToArray(b)
-      }
-      
-      b.length
+      val tempClearArr = new Array[Byte](len)
+      val bytesRead = data.read(tempClearArr, off, len)
+      if (bytesRead < 0) return bytesRead
+
+      val outBlockSize: Int = cipher.getOutputSize(bytesRead)
+
+      val outBuf = new Array[Byte](outBlockSize)
+      val length1 = cipher.processBytes(tempClearArr, 0, bytesRead, outBuf, 0);
+      val length2 = cipher.doFinal(outBuf, length1)
+      val actualLength = length1 + length2
+      val result = new Array[Byte](actualLength)
+      outBuf.copyToArray(b)
+      actualLength
+    
+//    
+//      if (bytesRead < 0) return bytesRead
+//      
+//      val outBlockSize: Int = cipher.getOutputSize(bytesRead)
+//      val tempCiphArr = new Array[Byte](outBlockSize)
+//      
+//      var totalEnc = 0
+//      var outL = 0
+//      
+//      outL = cipher.processBytes(tempClearArr, 0, bytesRead, tempCiphArr, 0)
+//      totalEnc = totalEnc + outL
+//      
+//      outL = cipher.doFinal(tempCiphArr, outL)
+//      if (outL > 0) {
+//        tempCiphArr.copyToArray(b)
+//        totalEnc = totalEnc + outL
+//      }
+//      totalEnc
     }
   }
 
@@ -280,28 +294,36 @@ class Cryptographer(file: File, password: Array[Char]) {
     def read(): Int = { read(b, 0, 1); b(0)  }
     override def read(b: Array[Byte], off: Int, len: Int): Int = {
       val cipher = makeCipher()
-
       cipher.init(false, new KeyParameter(key.byteArray))
-
-      var outL: Int = 0
-      var inblock: Array[Byte] = null
-      var outblock: Array[Byte] = null
-      var rv: Int = 0
-      while (({rv = data.read(inblock); rv}) > 0) {
-        inblock = Hex.decode(inblock)
-        outblock = new Array[Byte](cipher.getOutputSize(inblock.length))
-        outL = cipher.processBytes(inblock, 0, inblock.length, outblock, 0)
-        if (outL > 0) {
-          outblock.copyToArray(b)
-        }
-      }
-
-      outL = cipher.doFinal(outblock, 0)
-      if (outL > 0) {
-        outblock.copyToArray(b)
-      }
       
-      b.length
+      val tempEncryptedArr = new Array[Byte](len)
+      val bytesRead = data.read(tempEncryptedArr, off, len)
+      if (bytesRead < 0) return bytesRead
+
+      val outblockSize = cipher.getOutputSize(bytesRead)
+
+      val outBuf = new Array[Byte](outblockSize)
+      val length1 = cipher.processBytes(tempEncryptedArr, 0, bytesRead, outBuf, 0);
+      val length2 = cipher.doFinal(outBuf, length1)
+      val actualLength = length1 + length2
+      val result = new Array[Byte](actualLength)
+      outBuf.copyToArray(b)
+      actualLength
+
+//      var totalDec = 0
+//      var outL = 0
+//      
+//      val tempClearArr = new Array[Byte](outblockSize)
+//      outL = cipher.processBytes(tempEncryptedArr, 0, outblockSize, tempClearArr, 0)
+//      totalDec = totalDec + outL
+//
+//      outL = cipher.doFinal(tempClearArr, outL)
+//      if (outL > 0) {
+//        tempClearArr.copyToArray(b)
+//        totalDec = totalDec + outL
+//      }
+//      
+//      totalDec
     }
   }
 

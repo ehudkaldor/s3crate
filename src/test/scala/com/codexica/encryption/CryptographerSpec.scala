@@ -10,10 +10,18 @@ import java.io.PrintWriter
 import java.io.InputStream
 import java.io.BufferedInputStream
 import java.io.FileInputStream
+import org.junit.runner.RunWith
+import com.codexica.common.SafeInputStream
+import java.io.ByteArrayInputStream
+import org.apache.commons.io.IOUtils
+import org.specs2.runner.JUnitRunner
+import com.codexica.common.SafeInputStreamSpec
+
 
 /**
  * @author Josh Albrecht (joshalbrecht@gmail.com)
  */
+@RunWith(classOf[JUnitRunner])
 class CryptographerSpec extends SafeLogSpecification {
 
   trait Context extends CryptographicTestBase with BaseContext {
@@ -51,18 +59,13 @@ class CryptographerSpec extends SafeLogSpecification {
 
     }
     "properly encrypt and decrypt streams of data" in new Context {
-      val clearFile = new File(FileUtils.getTempDirectory, "clearTxtFile.txt")
-      val cipherFile = new File(FileUtils.getTempDirectory, "cipherTxtFile.txt")
-      clearFile.createNewFile()
-      cipherFile.createNewFile()
-      val clearTxt = "Hi, this is the clear text.\nOh! threr's a typo!"
-      new PrintWriter(clearFile).write(clearTxt)
+      val clearTxt = "Hi, this is the clear text"
       val key = crypto.generateSymmetricKey(symmKeyType)
-      crypto.encrypt(clearFile.toURI().toString(), cipherFile.toURI().toString(), key)
       
-      val cipherStream = crypto.encryptStream(key, new FileInputStream(clearFile))
-      val clearStream = crypto.decryptStream(key, new FileInputStream(cipherFile))
+      val cipherStream = crypto.encryptStream(key, new SafeInputStream(new ByteArrayInputStream(clearTxt.getBytes()), "Ehud's test"))
+      val clearStream = crypto.decryptStream(key, cipherStream)
+      
+      new String(IOUtils.toByteArray(clearStream)) must be equalTo clearTxt
     }
   }
-
 }
