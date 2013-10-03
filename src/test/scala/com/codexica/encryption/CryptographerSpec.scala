@@ -56,7 +56,14 @@ class CryptographerSpec extends SafeLogSpecification {
 
   "symmetric keys" should {
     "be easy to generate for various strengths" in new Context {
-
+      crypto.generateSymmetricKey(AES(512)) must not throwA new Exception
+      crypto.generateSymmetricKey(AES(512)) must not be null
+      crypto.generateSymmetricKey(AES(1024)) must not throwA new Exception
+      crypto.generateSymmetricKey(AES(1024)) must not be null
+      crypto.generateSymmetricKey(AES(2048)) must not throwA new Exception
+      crypto.generateSymmetricKey(AES(2048)) must not be null
+      crypto.generateSymmetricKey(AES(4096)) must not throwA new Exception
+      crypto.generateSymmetricKey(AES(4096)) must not be null
     }
     "properly encrypt and decrypt streams of data" in new Context {
       val clearTxt = "swfwpeofkjwepfmwef,'asfjweapgmewpragv[pwa,ef[veworkgfearov,slkfa[we"
