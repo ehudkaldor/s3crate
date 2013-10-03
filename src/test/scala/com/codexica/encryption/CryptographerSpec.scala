@@ -59,7 +59,7 @@ class CryptographerSpec extends SafeLogSpecification {
 
     }
     "properly encrypt and decrypt streams of data" in new Context {
-      val clearTxt = "Hi, this is the clear text"
+      val clearTxt = "swfwpeofkjwepfmwef,'asfjweapgmewpragv[pwa,ef[veworkgfearov,slkfa[we"
       val key = crypto.generateSymmetricKey(symmKeyType)
       
       val cipherStream = crypto.encryptStream(key, new SafeInputStream(new ByteArrayInputStream(clearTxt.getBytes()), "Ehud's test"))

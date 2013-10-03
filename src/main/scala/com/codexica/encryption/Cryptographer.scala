@@ -254,25 +254,6 @@ class Cryptographer(file: File, password: Array[Char]) {
       val result = new Array[Byte](actualLength)
       outBuf.copyToArray(b)
       actualLength
-    
-//    
-//      if (bytesRead < 0) return bytesRead
-//      
-//      val outBlockSize: Int = cipher.getOutputSize(bytesRead)
-//      val tempCiphArr = new Array[Byte](outBlockSize)
-//      
-//      var totalEnc = 0
-//      var outL = 0
-//      
-//      outL = cipher.processBytes(tempClearArr, 0, bytesRead, tempCiphArr, 0)
-//      totalEnc = totalEnc + outL
-//      
-//      outL = cipher.doFinal(tempCiphArr, outL)
-//      if (outL > 0) {
-//        tempCiphArr.copyToArray(b)
-//        totalEnc = totalEnc + outL
-//      }
-//      totalEnc
     }
   }
 
@@ -309,21 +290,6 @@ class Cryptographer(file: File, password: Array[Char]) {
       val result = new Array[Byte](actualLength)
       outBuf.copyToArray(b)
       actualLength
-
-//      var totalDec = 0
-//      var outL = 0
-//      
-//      val tempClearArr = new Array[Byte](outblockSize)
-//      outL = cipher.processBytes(tempEncryptedArr, 0, outblockSize, tempClearArr, 0)
-//      totalDec = totalDec + outL
-//
-//      outL = cipher.doFinal(tempClearArr, outL)
-//      if (outL > 0) {
-//        tempClearArr.copyToArray(b)
-//        totalDec = totalDec + outL
-//      }
-//      
-//      totalDec
     }
   }
 
